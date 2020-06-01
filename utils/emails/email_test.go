@@ -1,4 +1,4 @@
-package checkemail
+package emails
 
 import (
 	"testing"

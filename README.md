@@ -1,4 +1,4 @@
-# bookstore-users_api
+# Bookstore-users_api
 This is a go application that investigates making enterprise level Go software.
 
 
@@ -6,25 +6,37 @@ This is a go application that investigates making enterprise level Go software.
 Api is build with MVC pattern
 
 
-###Endpoints
+##Endpoints
 - GET     <host>:<port>/heartbeat
 - POST    <host>:<port>/users
 - GET     <host>:<port>/users/<user_id>
 
-####Controllers:
+###Controllers:
 The main goal of the controller is the entry point.
 It handels the request and does the validation.
 Only in this layer we use the http framework / server
 - heartbeat =cloud required controller to check if api is alive
 
 
-####Services
+###Services
 Contains the business logic
 
-####Domain
+###Domain
 
 
-####Error response
+###Database
+You can take the database/sql package from the standard library and you want to extend its interfaces
+Please check: http://go-database-sql.org/
+
+drivers:
+
+- mysql:  `go get -u github.com/go-sql-driver/mysql`
+- postgres: https://github.com/jackc/pgx/wiki/Getting-started-with-pgx
+- https://medium.com/avitotech/how-to-work-with-postgres-in-go-bad2dabd13e4
+
+
+
+###Error response
 RFC 7807 provides a standard format for returning problem details from HTTP APIs. In particular, it specifies the following:
 
 Error responses MUST use standard HTTP status codes in the 400 or 500 range to detail the general category of error.
@@ -32,7 +44,7 @@ Error responses will be of the Content-Type application/problem, appending a ser
 application/problem+json, application/problem+xml.
 
 Error responses will have each of the following keys:
-- **detail (string)** - A human-readable description of the specific error.
+- ***detail (string)*** - A human-readable description of the specific error.
 - **type (string)** - a URL to a document describing the error condition (optional, and "about:blank" is assumed if none is provided; should resolve to a human-readable document).
 - **title (string)** - A short, human-readable title for the general error type; the title should not change for given types.
 - **status (number)** - Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers. The status member, if present, is only advisory as generators MUST use the same status code in the actual HTTP response to assure that generic HTTP software that does not understand this format still behaves correctly.

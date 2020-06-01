@@ -1,4 +1,4 @@
-package checkemail
+package emails
 
 import (
 	"errors"
@@ -57,7 +57,7 @@ func ValidateHost(email string) error {
 	}
 	defer client.Close()
 
-	err = client.Hello("checkemail.me")
+	err = client.Hello("emails.me")
 	if err != nil {
 		return NewSmtpError(err)
 	}

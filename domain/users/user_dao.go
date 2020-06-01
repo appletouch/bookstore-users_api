@@ -4,8 +4,13 @@ package users
 
 import (
 	"fmt"
+	"github.com/appletouch/bookstore-users_api/datasources/mysql/users_db"
 	"github.com/appletouch/bookstore-users_api/utils/errors"
 	"net/http"
+)
+
+const (
+	insertQuery = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?,?,?,?);"
 )
 
 var (
@@ -14,6 +19,11 @@ var (
 
 // Get a user based on the user id
 func (user *User) Get() *errors.RestErr {
+
+	if err := users_db.Client.Ping(); err != nil {
+		panic(err)
+	}
+
 	if result := userDB[user.Id]; result != nil {
 
 		// as the user is a pointer we can modify the user
@@ -30,15 +40,31 @@ func (user *User) Get() *errors.RestErr {
 
 // save the user to the persistency layer...
 func (user *User) Save() *errors.RestErr {
-	current := userDB[user.Id]
-	if current != nil {
-		if current.Email == user.Email {
-			return errors.New(http.StatusConflict, fmt.Sprintf("%s has already been registered and is not available", user.Email))
-		}
-		// in this case we already have this userid
-		return errors.New(http.StatusConflict, fmt.Sprintf("The user with id %d already exsists", user.Id))
+
+	//set the current time to the user.
+	//user.DateCreated = dates.GetDateString()
+
+	statement, err := users_db.Client.Prepare(insertQuery)
+	if err != nil {
+		return errors.New(500, err.Error())
 	}
-	userDB[user.Id] = user
+	//after use you need to close the connection. (defer is stacked )
+	defer statement.Close()
+
+	//execute prepated statement
+	insertResult, err := statement.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	if err != nil {
+		return errors.New(500, "Error while trying to execute statement")
+	}
+	//ALTERNATIVE DIRECT ON DB WITHOUT PREPARE STATEMENT
+	//insertResult2, err := users_db.Client.Exec(insertQuery,user.FirstName, user.LastName, user.Email, user.DateCreated )
+
+	//Get last userid if succesful
+	userId, err := insertResult.LastInsertId()
+	if err != nil {
+		return errors.New(500, err.Error())
+	}
+	user.Id = userId
 
 	return nil
 }

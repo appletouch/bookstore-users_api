@@ -3,7 +3,7 @@ package users
 //MODEL CONTAIN THE DOMAIN DEFINITION AND THE METHODS
 
 import (
-	"github.com/appletouch/bookstore-users_api/utils/checkemail"
+	"github.com/appletouch/bookstore-users_api/utils/emails"
 	"github.com/appletouch/bookstore-users_api/utils/errors"
 	"net/http"
 	"strings"
@@ -21,8 +21,8 @@ type User struct {
 //adding the validate method to the user struct
 func (user *User) Validate() *errors.RestErr {
 	emailToLower := strings.TrimSpace(strings.ToLower(user.Email))
-	if err := checkemail.ValidateFormat(emailToLower); err != nil {
-		return errors.New(http.StatusBadRequest, "Invalid email address")
+	if err := emails.ValidateFormat(emailToLower); err != nil {
+		return errors.New(http.StatusBadRequest, "Invalid email-address")
 	}
 	return nil
 }
