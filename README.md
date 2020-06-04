@@ -5,6 +5,8 @@ This is a go application that investigates making enterprise level Go software.
 ##Design:
 Api is build with MVC pattern
 
+User->controller->service-->domain-->
+
 
 ##Endpoints
 - GET     <host>:<port>/heartbeat

@@ -29,40 +29,40 @@ func New(code int, message ...string) *RestErr {
 		case 400:
 			restErr = &RestErr{
 				Status: http.StatusBadRequest,
-				Title:  "Bad Request",
-				Detail: "Not a valid request or not correctly formatted",
+				Title:  "BAD REQUEST",
+				Detail: "The server cannot or will not process the request due to something that is perceived to be a client error",
 			}
 		case 401:
 			fmt.Println("Unauthorized")
 			restErr = &RestErr{
 				Status: http.StatusUnauthorized,
-				Title:  "Invalid token",
-				Detail: "No valid token found",
+				Title:  "UNAUTHORIZED",
+				Detail: "The request has not been applied because it lacks valid authentication credentials for the target resource",
 			}
 		case 404:
 			restErr = &RestErr{
 				Status: http.StatusNotFound,
-				Title:  "Invalid token",
-				Detail: "No valid token found",
+				Title:  "NOT FOUND",
+				Detail: "The origin server did not find a current representation for the target resource or is not willing to disclose that one exists.",
 			}
 		case 500:
 			restErr = &RestErr{
 				Status: http.StatusInternalServerError,
-				Title:  "Invalid token",
-				Detail: "No valid token found",
+				Title:  "INTERNAL SERVER ERROR",
+				Detail: "The server encountered an unexpected condition that prevented it from fulfilling the request.",
 			}
 		default:
 			restErr = &RestErr{
 				Status: http.StatusNotAcceptable,
-				Title:  "Invalid token",
-				Detail: "No valid token found",
+				Title:  "SERVICE UNAVAILABLE",
+				Detail: "The server is currently unable to handle the request due to a temporary overload or scheduled maintenance, which will likely be alleviated after some delay",
 			}
 		}
 	} else {
 		fmt.Println("Custom Bad request error")
 		restErr = &RestErr{
 			Status: code,
-			Title:  "User error",
+			Title:  "Something went wrong",
 			Detail: message[0],
 		}
 	}

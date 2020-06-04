@@ -38,6 +38,8 @@ func init() {
 	//open functon once and use it during live of application.
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", username, password, host, shema)
 	var err error
+
+	//Creating a client that can create connection and execute statements.
 	Client, err = sql.Open("mysql", dataSourceName)
 	if err != nil {
 		panic(err)
