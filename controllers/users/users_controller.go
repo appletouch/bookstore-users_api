@@ -64,6 +64,33 @@ func GetUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
-func SearchUser(ctx *gin.Context) {
-	ctx.String(http.StatusNotImplemented, "Not implemented")
+func UpdateUser(ctx *gin.Context) {
+
+	//Get the user from te request and parse to string
+	userId, userErr := strconv.ParseInt(ctx.Param("user_id"), 10, 10)
+
+	//if user id is invalid (not a int) in the request return a error
+	if userErr != nil {
+		err := errors.New(http.StatusBadRequest, "UserID is not valid")
+		ctx.JSON(http.StatusBadRequest, err)
+	}
+
+	var user users.User
+	//using ginEngine context to parse and bind json request to user struct
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		fmt.Println(err)
+		ctx.JSON(http.StatusBadRequest, errors.New(http.StatusBadRequest))
+		return
+	}
+	user.Id = userId
+
+	isPartial := ctx.Request.Method == http.MethodPatch
+
+	result, err := services.UpdateUser(isPartial, user)
+	if err != nil {
+		ctx.JSON(err.Status, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, result)
+
 }

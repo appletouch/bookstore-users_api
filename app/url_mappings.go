@@ -14,6 +14,8 @@ func mapUrls() {
 	//users
 	ginEngine.POST("/users", users.CreateUser)
 	ginEngine.GET("/users/:user_id", users.GetUser)
+	ginEngine.PUT("/users/:user_id", users.UpdateUser)
+	ginEngine.PATCH("/users/:user_id", users.UpdateUser)
 	//ginEngine.GET("/users/search", controllers.SearchUser)
 
 }

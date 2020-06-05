@@ -33,3 +33,38 @@ func GetUser(userid int64) (*users.User, *errors.RestErr) {
 	}
 	return result, nil
 }
+
+func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
+	//get the user from the database
+	current, err := GetUser(user.Id)
+	if err != nil {
+		return nil, err // if not found return a err not found
+	}
+
+	// if it is a patch and not a put then only a part is being updated
+	if isPartial {
+		if user.FirstName != "" {
+			current.FirstName = user.FirstName
+		}
+		if user.LastName != "" {
+			current.LastName = user.LastName
+		}
+		if user.Email != "" {
+			current.Email = user.Email
+		}
+	} else {
+		current.FirstName = user.FirstName
+		current.LastName = user.LastName
+		current.Email = user.Email
+	}
+
+	if err := current.Validate(); err != nil {
+		return nil, err
+	}
+
+	if err := current.Update(); err != nil {
+		return nil, err
+	}
+	return current, nil
+
+}

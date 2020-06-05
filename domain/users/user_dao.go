@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	updateQuery = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?"
 	insertQuery = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?,?,?,?);"
 	selectquery = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
 )
@@ -78,4 +79,20 @@ func (user *User) Save() *errors.RestErr {
 	user.Id = userId
 
 	return nil
+}
+
+func (user *User) Update() *errors.RestErr {
+
+	statement, err := users_db.Client.Prepare(updateQuery)
+	if err != nil {
+		return errors.New(500)
+	}
+	defer statement.Close()
+
+	_, err = statement.Exec(user.FirstName, user.LastName, user.Email, user.Id)
+	if err != nil {
+		return errors.New(500)
+	}
+	return nil
+
 }
