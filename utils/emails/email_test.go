@@ -27,21 +27,21 @@ var (
 	}
 )
 
-func TestValidateHost(t *testing.T) {
-	for _, s := range samples {
-		if !s.format {
-			continue
-		}
-
-		err := ValidateHost(s.mail)
-		if err != nil && s.account == true {
-			t.Errorf(`"%s" => unexpected error: "%v"`, s.mail, err)
-		}
-		if err == nil && s.account == false {
-			t.Errorf(`"%s" => expected error`, s.mail)
-		}
-	}
-}
+//func TestValidateHost(t *testing.T) {
+//	for _, s := range samples {
+//		if !s.format {
+//			continue
+//		}
+//
+//		err := ValidateHost(s.mail)
+//		if err != nil && s.account == true {
+//			t.Errorf(`"%s" => unexpected error: "%v"`, s.mail, err)
+//		}
+//		if err == nil && s.account == false {
+//			t.Errorf(`"%s" => expected error`, s.mail)
+//		}
+//	}
+//}
 
 func TestValidateFormat(t *testing.T) {
 	for _, s := range samples {

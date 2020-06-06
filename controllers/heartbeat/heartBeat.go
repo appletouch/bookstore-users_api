@@ -7,6 +7,6 @@ import (
 )
 
 func HeartBeat(ctx *gin.Context) {
-	ctx.String(http.StatusOK, dates.GetDateString())
+	ctx.JSON(http.StatusOK, map[string]string{"status": "200", "title": "Health OK", "detail": dates.GetDateString()})
 	//ctx.String(http.StatusOK,"hello from server")
 }

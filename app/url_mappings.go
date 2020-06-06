@@ -12,10 +12,11 @@ func mapUrls() {
 	ginEngine.GET("/heartbeat", heartbeat.HeartBeat)
 
 	//users
-	ginEngine.POST("/users", users.CreateUser)
-	ginEngine.GET("/users/:user_id", users.GetUser)
-	ginEngine.PUT("/users/:user_id", users.UpdateUser)
-	ginEngine.PATCH("/users/:user_id", users.UpdateUser)
-	//ginEngine.GET("/users/search", controllers.SearchUser)
+	ginEngine.POST("/users", users.Create)
+	ginEngine.GET("/users/:user_id", users.Get)
+	ginEngine.PUT("/users/:user_id", users.Update)
+	ginEngine.PATCH("/users/:user_id", users.Update)
+	ginEngine.DELETE("/users/:user_id", users.Delete)
+	//ginEngine.GET("/users/search/status", users.SearchUsers)
 
 }

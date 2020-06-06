@@ -4,24 +4,25 @@ package users
 
 import (
 	"github.com/appletouch/bookstore-users_api/datasources/mysql/users_db"
-	"github.com/appletouch/bookstore-users_api/utils/dates"
 	"github.com/appletouch/bookstore-users_api/utils/errors"
 	"strings"
 )
 
 const (
-	updateQuery = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?"
-	insertQuery = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?,?,?,?);"
-	selectquery = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
+	findUsersByStatus = "SELECT first_name, last_name, email, date_created, status FROM users WHERE status=?;"
+	deleteQuery       = "DELETE FROM users WHERE id=?"
+	updateQuery       = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
+	insertQuery       = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?,?,?,?,?,?);"
+	selectQuery       = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE id=?;"
 )
 
 //var (
 //	userDB = make(map[int64]*User)
 //)
 
-// Get a user based on the user id
+//GET a user based on the user id
 func (user *User) Get() *errors.RestErr {
-	statement, err := users_db.Client.Prepare(selectquery)
+	statement, err := users_db.Client.Prepare(selectQuery)
 	if err != nil {
 		return errors.New(500, err.Error())
 	}
@@ -35,7 +36,7 @@ func (user *User) Get() *errors.RestErr {
 	// You then need to interact with the results via de scan function.
 
 	result := statement.QueryRow(user.Id)
-	if err := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated); err != nil {
+	if err := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
 		//check if the error is a 404 not found
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return errors.New(404)
@@ -45,11 +46,8 @@ func (user *User) Get() *errors.RestErr {
 	return nil
 }
 
-// save the user to the persistency layer...
+//CREATE save the user to the persistency layer...
 func (user *User) Save() *errors.RestErr {
-
-	//set the current time to the user.
-	user.DateCreated = dates.GetDateString()
 
 	statement, err := users_db.Client.Prepare(insertQuery)
 	if err != nil {
@@ -59,7 +57,7 @@ func (user *User) Save() *errors.RestErr {
 	defer statement.Close()
 
 	//execute prepated statement
-	insertResult, err := statement.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	insertResult, err := statement.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
 	if err != nil {
 		//check if the error is related to a double registration and give a specific message to user.
 		if strings.Contains(err.Error(), "email_UNIQUE") {
@@ -81,6 +79,7 @@ func (user *User) Save() *errors.RestErr {
 	return nil
 }
 
+//UPDATE
 func (user *User) Update() *errors.RestErr {
 
 	statement, err := users_db.Client.Prepare(updateQuery)
@@ -94,5 +93,59 @@ func (user *User) Update() *errors.RestErr {
 		return errors.New(500)
 	}
 	return nil
+
+}
+
+//DELETE
+func (user *User) Delete() *errors.RestErr {
+	statement, err := users_db.Client.Prepare(deleteQuery)
+	if err != nil {
+		return errors.New(500)
+	}
+	defer statement.Close()
+
+	_, err = statement.Exec(user.Id)
+	if err != nil {
+		return errors.New(500)
+	}
+	return nil
+
+}
+
+//SEARCH
+func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
+
+	//prepare a sql statement and open the connection.. don't forget to close it!!
+	statement, err := users_db.Client.Prepare(findUsersByStatus)
+	if err != nil {
+		return nil, errors.New(500)
+	}
+	// only defere if you have a valid result.
+	defer statement.Close()
+
+	//Execute statement with te value from the user.
+	foundRows, err := statement.Query(status)
+	if err != nil {
+		return nil, errors.New(404, "No users where found with this status")
+	}
+
+	// only defere if you have a valid result.
+	defer foundRows.Close()
+
+	//process the foundrows
+	var foundUsers []User
+	for foundRows.Next() {
+		var user User
+		err := foundRows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status)
+		if err != nil {
+			return nil, errors.New(500)
+		}
+		foundUsers = append(foundUsers, user)
+	}
+
+	if len(foundUsers) == 0 {
+		return nil, errors.New(404, " no users found with this status.")
+	}
+	return foundUsers, nil
 
 }

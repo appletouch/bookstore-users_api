@@ -1,6 +1,7 @@
 package users
 
 //CONTOLLERS ARE THE INTERACTION POINT WITH THE REQUESTER
+//CONTROLLERS PROCESS THE REQUEST AND PRODUCE THE RESPONSE
 
 import (
 	"fmt"
@@ -12,7 +13,7 @@ import (
 	"strconv"
 )
 
-func CreateUser(ctx *gin.Context) {
+func Create(ctx *gin.Context) {
 
 	//!!!!!!This whole block of code can be replaced with the ShouldBindJSON function!!!!
 	//bytes, err := ioutil.ReadAll(ctx.Request.Body)
@@ -43,7 +44,7 @@ func CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, result)
 }
 
-func GetUser(ctx *gin.Context) {
+func Get(ctx *gin.Context) {
 
 	//Get the user from te request and parse to string
 	userId, userErr := strconv.ParseInt(ctx.Param("user_id"), 10, 10)
@@ -64,7 +65,7 @@ func GetUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
-func UpdateUser(ctx *gin.Context) {
+func Update(ctx *gin.Context) {
 
 	//Get the user from te request and parse to string
 	userId, userErr := strconv.ParseInt(ctx.Param("user_id"), 10, 10)
@@ -92,5 +93,22 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
+
+}
+
+func Delete(ctx *gin.Context) {
+	//Get the user from te request and parse to string
+	userId, userErr := strconv.ParseInt(ctx.Param("user_id"), 10, 10)
+	if userErr != nil {
+		ctx.JSON(http.StatusBadRequest, userErr)
+	}
+	if errDelete := services.DeleteUser(userId); errDelete != nil {
+		ctx.JSON(http.StatusBadRequest, errDelete)
+	}
+	ctx.JSON(http.StatusOK, map[string]string{"title": "Record deleted", "status": "200", "detail": fmt.Sprintf("User %d has been deleted", userId)})
+
+}
+
+func SearchUsers(ctx *gin.Context) {
 
 }
