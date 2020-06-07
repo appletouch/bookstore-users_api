@@ -34,7 +34,7 @@ func Create(ctx *gin.Context) {
 		return
 	}
 	// call the servce to create the user
-	result, saveError := services.CreateUser(user)
+	result, saveError := services.UserService.CreateUser(user)
 	if saveError != nil {
 		fmt.Println(saveError)
 		ctx.JSON(saveError.Status, saveError)
@@ -56,13 +56,13 @@ func Get(ctx *gin.Context) {
 	}
 
 	// call the servce to GET the user
-	user, getError := services.GetUser(userId)
+	user, getError := services.UserService.GetUser(userId)
 	if getError != nil {
 		fmt.Println(getError)
 		ctx.JSON(getError.Status, getError)
 		return
 	}
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, user.Marshal(ctx.GetHeader("X-Public") == "true"))
 }
 
 func Update(ctx *gin.Context) {
@@ -87,7 +87,7 @@ func Update(ctx *gin.Context) {
 
 	isPartial := ctx.Request.Method == http.MethodPatch
 
-	result, err := services.UpdateUser(isPartial, user)
+	result, err := services.UserService.UpdateUser(isPartial, user)
 	if err != nil {
 		ctx.JSON(err.Status, err)
 		return
@@ -102,7 +102,7 @@ func Delete(ctx *gin.Context) {
 	if userErr != nil {
 		ctx.JSON(http.StatusBadRequest, userErr)
 	}
-	if errDelete := services.DeleteUser(userId); errDelete != nil {
+	if errDelete := services.UserService.DeleteUser(userId); errDelete != nil {
 		ctx.JSON(http.StatusBadRequest, errDelete)
 	}
 	ctx.JSON(http.StatusOK, map[string]string{"title": "Record deleted", "status": "200", "detail": fmt.Sprintf("User %d has been deleted", userId)})
@@ -110,5 +110,11 @@ func Delete(ctx *gin.Context) {
 }
 
 func SearchUsers(ctx *gin.Context) {
+	fmt.Println("STARTNG SEARCH")
+
+}
+
+func GetActiveUsers(ctx *gin.Context) {
+	fmt.Println("Getting active users")
 
 }

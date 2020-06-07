@@ -1,5 +1,7 @@
 package users
 
+import "encoding/json"
+
 //Missing all personal information
 type PublicUser struct {
 	Id          int64  `json:"id"`
@@ -8,7 +10,7 @@ type PublicUser struct {
 }
 
 // is only missing password
-type InternalUser struct {
+type PrivateUser struct {
 	Id          int64  `json:"id"`
 	FirstName   string `json:"first_name"on:"first_name"`
 	LastName    string `json:"last_name"`
@@ -17,6 +19,17 @@ type InternalUser struct {
 	Status      string `json:"status"`
 }
 
-func (User *User) Marshal(isPubli bool) {
-
+func (User *User) Marshal(isPublic bool) interface{} {
+	if isPublic {
+		return PublicUser{
+			Id:          User.Id,
+			DateCreated: User.DateCreated,
+			Status:      User.Status,
+		}
+	}
+	//private user has no password
+	userJson, _ := json.Marshal(User)
+	var privateUser PrivateUser
+	json.Unmarshal(userJson, &privateUser)
+	return privateUser
 }

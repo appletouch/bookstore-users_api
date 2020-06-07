@@ -10,8 +10,26 @@ import (
 	"github.com/appletouch/bookstore-users_api/utils/errors"
 )
 
+type userService struct {
+}
+
+//define a var that is a interfaces and contains a instance of userServices struct.
+var (
+	UserService userServiceInterface = &userService{}
+)
+
+// interactie is always on the interface
+// ALWAYS START WITH DEFINING THE INTERFACE
+type userServiceInterface interface {
+	CreateUser(users.User) (*users.User, *errors.RestErr)
+	GetUser(int64) (*users.User, *errors.RestErr)
+	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
+	DeleteUser(int64) *errors.RestErr
+	search(string) ([]users.User, *errors.RestErr)
+}
+
 // The creat user function contains the business logic that does the validation and saves the user.
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func (us *userService) CreateUser(user users.User) (*users.User, *errors.RestErr) {
 
 	//set the current time to the user.
 	user.DateCreated = dates.GetNowDBDate()
@@ -19,6 +37,9 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 
 	//Validate the user or return a error.
 	if err := user.Validate(); err != nil {
+		return nil, err
+	}
+	if err := user.ValidatePassword(); err != nil {
 		return nil, err
 	}
 
@@ -34,7 +55,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 }
 
 // The Get user function retrieves a user based on the user_id(int) from the persistancy layer.
-func GetUser(userid int64) (*users.User, *errors.RestErr) {
+func (us *userService) GetUser(userid int64) (*users.User, *errors.RestErr) {
 
 	//set the userid of the user to retieve
 	result := &users.User{Id: userid}
@@ -47,10 +68,10 @@ func GetUser(userid int64) (*users.User, *errors.RestErr) {
 }
 
 //The update users can be called via a put( replaces all user info) or a patch (replaces parts of user info).
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
+func (us *userService) UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
 
 	//get the user from the database
-	current, err := GetUser(user.Id)
+	current, err := UserService.GetUser(user.Id)
 	if err != nil {
 		return nil, err // if not found return a err not found
 	}
@@ -86,7 +107,7 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 }
 
 // calls the delete method on the user object
-func DeleteUser(userId int64) *errors.RestErr {
+func (us *userService) DeleteUser(userId int64) *errors.RestErr {
 
 	//create a user and always interact with user object.
 	var userToDelete = &users.User{Id: userId}
@@ -94,7 +115,7 @@ func DeleteUser(userId int64) *errors.RestErr {
 	return nil
 }
 
-func search(status string) ([]users.User, *errors.RestErr) {
+func (us *userService) search(status string) ([]users.User, *errors.RestErr) {
 
 	var user = &users.User{}
 	return user.FindByStatus(status)

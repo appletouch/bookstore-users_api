@@ -31,6 +31,10 @@ func (user *User) Validate() *errors.RestErr {
 	if err := emails.ValidateFormat(emailToLower); err != nil {
 		return errors.New(http.StatusBadRequest, "Invalid email-address")
 	}
+	return nil
+}
+
+func (user *User) ValidatePassword() *errors.RestErr {
 	//check password
 	user.Password = strings.TrimSpace(user.Password)
 	if len(user.Password) < 5 {
