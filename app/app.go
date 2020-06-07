@@ -1,6 +1,9 @@
 package app
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/appletouch/bookstore-users_api/logger"
+	"github.com/gin-gonic/gin"
+)
 
 // the router is only available in the app package
 var (
@@ -11,6 +14,8 @@ var (
 //start application with urls mapped
 func StartApplication() {
 	mapUrls()
+
+	logger.Info("About to start application...")
 	ginEngine.Run(":3000")
 
 }

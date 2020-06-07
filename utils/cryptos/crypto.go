@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
+	"github.com/appletouch/bookstore-users_api/logger"
 	"io"
 )
 
@@ -28,12 +29,14 @@ func encrypt(data []byte) []byte {
 	block, _ := aes.NewCipher([]byte(createHash(passphrase)))
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
+		logger.Error("APPLICATION CRASHED WITH ERROR", err)
 		panic(err.Error())
 	}
 
 	//Before we can create the ciphertext, we need to create a nonce.
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		logger.Error("APPLICATION CRASHED WITH ERROR", err)
 		panic(err.Error())
 	}
 	//There are a few strategies that can be used to make sure our decryption nonce matches the encryption nonce.
@@ -51,10 +54,12 @@ func decrypt(data []byte) []byte {
 	key := []byte(createHash(passphrase))
 	block, err := aes.NewCipher(key)
 	if err != nil {
+		logger.Error("APPLICATION CRASHED WITH ERROR", err)
 		panic(err.Error())
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
+		logger.Error("APPLICATION CRASHED WITH ERROR", err)
 		panic(err.Error())
 	}
 
@@ -66,6 +71,7 @@ func decrypt(data []byte) []byte {
 	//When we have our nonce and ciphertext separated, we can decrypt the data and return it as plaintext.
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
+		logger.Error("APPLICATION CRASHED WITH ERROR", err)
 		panic(err.Error())
 	}
 	return plaintext

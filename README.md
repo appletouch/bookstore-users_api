@@ -1,4 +1,4 @@
-# Bookstore-users_api
+#Bookstore-users_api
 This is a go application that investigates making enterprise level Go software.
 
 
@@ -57,6 +57,11 @@ Error responses will have each of the following keys:
 ###web framework
 - gin-ginonic (https://github.com/gin-gonic/gin) 40x faster the httprouter
 Serving rest api in production
- a) go get -u github.com/gin-gonic/gin
- b) import "github.com/gin-gonic/gin"
+ `go get -u github.com/gin-gonic/gin`
  
+  `import "github.com/gin-gonic/gin"`
+ 
+##Zap (uber-go)
+Blazing fast, structured, leveled logging in Go.
+
+`go get -u go.uber.org/zap`

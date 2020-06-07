@@ -3,6 +3,7 @@ package emails
 import (
 	"errors"
 	"fmt"
+	"github.com/appletouch/bookstore-users_api/logger"
 	"net"
 	"net/smtp"
 	"regexp"
@@ -15,14 +16,17 @@ type SmtpError struct {
 }
 
 func (e SmtpError) Error() string {
+	logger.Error("Error in package email", e.Err)
 	return e.Err.Error()
 }
 
 func (e SmtpError) Code() string {
+	logger.Error("Error in package email", e.Err)
 	return e.Err.Error()[0:3]
 }
 
 func NewSmtpError(err error) SmtpError {
+	logger.Error("Error in package email", err)
 	return SmtpError{
 		Err: err,
 	}
@@ -48,11 +52,13 @@ func ValidateHost(email string) error {
 	_, host := split(email)
 	mx, err := net.LookupMX(host)
 	if err != nil {
+		logger.Error("Error Unresolvable Host", err)
 		return ErrUnresolvableHost
 	}
 
 	client, err := DialTimeout(fmt.Sprintf("%s:%d", mx[0].Host, 25), forceDisconnectAfter)
 	if err != nil {
+		logger.Error("Error DialTimeout", err)
 		return NewSmtpError(err)
 	}
 	defer client.Close()

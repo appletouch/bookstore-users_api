@@ -4,6 +4,7 @@ package users
 
 import (
 	"github.com/appletouch/bookstore-users_api/datasources/mysql/users_db"
+	"github.com/appletouch/bookstore-users_api/logger"
 	"github.com/appletouch/bookstore-users_api/utils/errors"
 	"strings"
 )
@@ -24,7 +25,8 @@ const (
 func (user *User) Get() *errors.RestErr {
 	statement, err := users_db.Client.Prepare(selectQuery)
 	if err != nil {
-		return errors.New(500, err.Error())
+		logger.Error("error while trying to prepare get user statement", err)
+		return errors.New(500)
 	}
 	defer statement.Close()
 
@@ -41,7 +43,8 @@ func (user *User) Get() *errors.RestErr {
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return errors.New(404)
 		}
-		return errors.New(500, err.Error())
+		logger.Error("error while scanning rows in get result", err)
+		return errors.New(500)
 	}
 	return nil
 }
@@ -51,20 +54,21 @@ func (user *User) Save() *errors.RestErr {
 
 	statement, err := users_db.Client.Prepare(insertQuery)
 	if err != nil {
-		return errors.New(500, err.Error())
+		logger.Error("error while trying to prepare get user statement", err)
+		return errors.New(500)
 	}
 	//after use you need to close the connection. (defer is stacked )
 	defer statement.Close()
 
-	//execute prepated statement
+	//execute prepared statement
 	insertResult, err := statement.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
 	if err != nil {
 		//check if the error is related to a double registration and give a specific message to user.
 		if strings.Contains(err.Error(), "email_UNIQUE") {
 			return errors.New(400, "Email has already been registered.")
 		}
-
-		return errors.New(500, err.Error())
+		logger.Error("error while trying to insert user", err)
+		return errors.New(500)
 	}
 	//ALTERNATIVE DIRECT ON DB WITHOUT PREPARE STATEMENT
 	//insertResult2, err := users_db.Client.Exec(insertQuery,user.FirstName, user.LastName, user.Email, user.DateCreated )
@@ -72,7 +76,8 @@ func (user *User) Save() *errors.RestErr {
 	//Get last userid if succesful
 	userId, err := insertResult.LastInsertId()
 	if err != nil {
-		return errors.New(400, err.Error())
+		logger.Error("error while trying to get last inserted userid", err)
+		return errors.New(400)
 	}
 	user.Id = userId
 
@@ -84,12 +89,14 @@ func (user *User) Update() *errors.RestErr {
 
 	statement, err := users_db.Client.Prepare(updateQuery)
 	if err != nil {
+		logger.Error("error while trying to prepare update user statement", err)
 		return errors.New(500)
 	}
 	defer statement.Close()
 
 	_, err = statement.Exec(user.FirstName, user.LastName, user.Email, user.Id)
 	if err != nil {
+		logger.Error("error while trying to execute update statement", err)
 		return errors.New(500)
 	}
 	return nil
@@ -100,12 +107,14 @@ func (user *User) Update() *errors.RestErr {
 func (user *User) Delete() *errors.RestErr {
 	statement, err := users_db.Client.Prepare(deleteQuery)
 	if err != nil {
+		logger.Error("error while trying to prepare delete user statement", err)
 		return errors.New(500)
 	}
 	defer statement.Close()
 
 	_, err = statement.Exec(user.Id)
 	if err != nil {
+		logger.Error("error while trying to execute delete user statement", err)
 		return errors.New(500)
 	}
 	return nil
@@ -118,6 +127,7 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 	//prepare a sql statement and open the connection.. don't forget to close it!!
 	statement, err := users_db.Client.Prepare(findUsersByStatus)
 	if err != nil {
+		logger.Error("error while trying to prepare find user statement", err)
 		return nil, errors.New(500)
 	}
 	// only defere if you have a valid result.
