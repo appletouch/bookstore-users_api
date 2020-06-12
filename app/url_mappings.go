@@ -35,4 +35,7 @@ func mapUrls() {
 		users.SearchUsers(ctx)
 	})
 
+	//find by email and password
+	ginEngine.POST("/users/user/login", users.Login)
+
 }

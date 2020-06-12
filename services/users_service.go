@@ -8,6 +8,8 @@ import (
 	"github.com/appletouch/bookstore-users_api/utils/cryptos"
 	"github.com/appletouch/bookstore-users_api/utils/dates"
 	"github.com/appletouch/bookstore-users_api/utils/errors"
+	"golang.org/x/crypto/bcrypt"
+	"net/http"
 )
 
 type userService struct {
@@ -26,6 +28,7 @@ type userServiceInterface interface {
 	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
 	DeleteUser(int64) *errors.RestErr
 	search(string) ([]users.User, *errors.RestErr)
+	LoginUser(users.LoginRequest) (*users.User, *errors.RestErr)
 }
 
 // The creat user function contains the business logic that does the validation and saves the user.
@@ -43,7 +46,7 @@ func (us *userService) CreateUser(user users.User) (*users.User, *errors.RestErr
 		return nil, err
 	}
 
-	encryptedPWD := cryptos.Encryptpassword(user.Password)
+	encryptedPWD := cryptos.HashAndSaltPassword(user.Password)
 	user.Password = encryptedPWD
 
 	// save the user or return a error
@@ -119,4 +122,28 @@ func (us *userService) search(status string) ([]users.User, *errors.RestErr) {
 
 	var user = &users.User{}
 	return user.FindByStatus(status)
+}
+
+func (us *userService) LoginUser(request users.LoginRequest) (*users.User, *errors.RestErr) {
+
+	dao := &users.User{
+		Email:    request.Email,
+		Password: request.Password,
+	}
+	if err := dao.FindByEmailAndPassword(); err != nil {
+		return nil, err
+	}
+	//check if account has been blocked.
+	if dao.Status == "blocked" {
+		return nil, errors.New(http.StatusUnauthorized, "Account has been blocked")
+	}
+	//check password
+	err := bcrypt.CompareHashAndPassword([]byte(dao.Password), []byte(request.Password))
+	if err != nil {
+		return nil, errors.New(http.StatusNotFound, "Invalid credentials")
+	}
+
+	dao.Password = "OK"
+
+	return dao, nil
 }

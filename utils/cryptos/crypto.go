@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"github.com/appletouch/bookstore-users_api/logger"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 )
 
@@ -87,4 +88,21 @@ func Encryptpassword(password string) string {
 func DecryptPassword(secret string) string {
 	password := decrypt([]byte(secret))
 	return string(password)
+}
+
+func HashAndSaltPassword(password string) string {
+
+	// Use GenerateFromPassword to hash & salt pwd
+	// MinCost is just an integer constant provided by the bcrypt
+	// package along with DefaultCost & MaxCost.
+	// The cost can be any value you want provided it isn't lower
+	// than the MinCost (4)
+	pwd := []byte(password)
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		logger.Error(err.Error(), err)
+	}
+	// GenerateFromPassword returns a byte slice so we need to
+	// convert the bytes to a string and return it
+	return string(hash)
 }

@@ -2,6 +2,8 @@ package cryptos
 
 import (
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
+	"log"
 	"testing"
 )
 
@@ -46,4 +48,19 @@ func TestEncyptionBytes(t *testing.T) {
 	//decrypt raw
 	plaintext := decrypt(bt)
 	fmt.Printf("password after: %s\n", plaintext)
+}
+
+func TestHashAndSaltPassword(t *testing.T) {
+	var startPassword string = "welkom01"
+	fmt.Printf("The start password: %s\n", startPassword)
+	secret := HashAndSaltPassword(startPassword)
+	fmt.Printf("The start secret: %s\n", secret)
+
+	err := bcrypt.CompareHashAndPassword([]byte(secret), []byte(startPassword))
+	if err != nil {
+		log.Println(err)
+		t.Error(err)
+	} else {
+		t.Log("Test was succesful for:", startPassword)
+	}
 }

@@ -118,3 +118,22 @@ func GetActiveUsers(ctx *gin.Context) {
 	fmt.Println("Getting active users")
 
 }
+
+func Login(ctx *gin.Context) {
+
+	// struct as input for function calls.
+	var request users.LoginRequest
+
+	// bind the received request to the LoginRequest struct
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, errors.New(400, "invalid request"))
+	}
+	// call function in the service with the request as param
+	user, err := services.UserService.LoginUser(request)
+	if err != nil {
+		ctx.JSON(err.Status, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, user.Marshal(true))
+
+}

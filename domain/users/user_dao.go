@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	findUsersByStatus = "SELECT first_name, last_name, email, date_created, status FROM users WHERE status=?;"
-	deleteQuery       = "DELETE FROM users WHERE id=?"
-	updateQuery       = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
-	insertQuery       = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?,?,?,?,?,?);"
-	selectQuery       = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE id=?;"
+	deleteQuery  = "DELETE FROM users WHERE id=?"
+	updateQuery  = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
+	insertQuery  = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?,?,?,?,?,?);"
+	selectQuery  = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE id=?;"
+	findByStatus = "SELECT first_name, last_name, email, date_created, status FROM users WHERE status=?;"
+	findByEmail  = "SELECT id, first_name, last_name, email, date_created, status, password FROM users WHERE email=?;"
 )
 
 //var (
@@ -125,7 +126,7 @@ func (user *User) Delete() *errors.RestErr {
 func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 
 	//prepare a sql statement and open the connection.. don't forget to close it!!
-	statement, err := users_db.Client.Prepare(findUsersByStatus)
+	statement, err := users_db.Client.Prepare(findByStatus)
 	if err != nil {
 		logger.Error("error while trying to prepare find user statement", err)
 		return nil, errors.New(500)
@@ -158,4 +159,26 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 	}
 	return foundUsers, nil
 
+}
+
+//GET a user based by email and Password
+func (user *User) FindByEmailAndPassword() *errors.RestErr {
+	statement, err := users_db.Client.Prepare(findByEmail)
+	if err != nil {
+		logger.Error("error while trying to prepare get user by email and password ", err)
+		return errors.New(500)
+	}
+	defer statement.Close()
+
+	result := statement.QueryRow(user.Email)
+	if err := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status, &user.Password); err != nil {
+		//check if the error is a 404 not found
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return errors.New(404)
+		}
+		logger.Error("error while scanning rows in get result", err)
+		return errors.New(500)
+	}
+
+	return nil
 }
